@@ -1,5 +1,7 @@
 package com.makeupdepot.inventory.repo.domain.obj;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -8,8 +10,8 @@ import java.util.Date;
  */
 public class DateTimeEntity {
 
-    @NotNull private Date created;
-    @NotNull private Date lastUpdated;
+    @JsonFormat(pattern = "MMM-dd-yyyy")
+    private Date created, lastUpdated;
 
     public Date getCreated() {
         return created;

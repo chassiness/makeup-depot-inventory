@@ -1,150 +1,108 @@
 package com.makeupdepot.inventory.repo.domain.obj;
 
 import com.makeupdepot.inventory.misc.Currency;
-import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.CompoundIndex;
-import org.springframework.data.mongodb.core.index.CompoundIndexes;
+import org.springframework.data.annotation.Transient;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.Comparator;
 
 /**
- * Created by chassiness on 11/16/16.
+ * Created by chassiness on 12/5/16.
  */
-@CompoundIndexes({
-        @CompoundIndex(name = "product", def = "{'brand': 1, 'type': 1, 'shade': 1}"),
-        @CompoundIndex(name = "retailprice_asc", def = "{'retailPrice': 1, 'brand': 1}"),
-        @CompoundIndex(name = "unitcost_asc", def = "{'unitCost.value': 1, 'brand': 1}")
-})
-public class Product {
+public class Product extends DateTimeEntity {
 
-    @NotNull
-    private String brand;
-    @NotNull
-    private String type;
-    private String shade;
+    @Id private String id;
 
-    @NotNull
-    private Currency unitCost;
-    private BigDecimal tax;
-    private Currency shipping;
-    private BigDecimal applicableDiscount;
+    @NotNull private Item item;
+    @NotNull private Currency retailPrice;
 
-    private String notes;
-    private String retailer;
-
-    public Product(String brand, String type, Currency unitCost) {
-        this.brand = brand;
-        this.type = type;
-        this.unitCost = unitCost;
-    }
+    @Transient private Currency projectedMarginAtFullPrice;
+    @Transient private Currency projectedMarginAtApplicableDiscount;
 
     private Product() {
     }
 
-    public Currency computeTotalCost() {
-        return new Currency(this.unitCost.getType(), applyTaxAndShipping(this.unitCost.getValue()));
+    public Product(Item item, Currency retailPrice, Currency exchangeRate) {
+        this.item = item;
+        this.retailPrice = retailPrice;
+        this.projectedMarginAtFullPrice = computeMarginAtRetailPrice(exchangeRate);
+        this.projectedMarginAtApplicableDiscount = computeMarginAtApplicableDiscount(exchangeRate);
     }
 
-    protected BigDecimal applyTaxAndShipping(BigDecimal cost) {
-        BigDecimal totalCost = cost;
-        if (tax != null) {
-            totalCost = totalCost.add(totalCost.multiply(tax));
+    public static Comparator<Product> unitPriceComparator() {
+        return new Comparator<Product>() {
+            @Override
+            public int compare(Product first, Product second) {
+                if (first == null || second == null) {
+                    throw new IllegalArgumentException("Item prices to be compared cannot be null.");
+                }
+                BigDecimal firstCost = first.item.getUnitCost().getValue();
+                BigDecimal secondCost = second.item.getUnitCost().getValue();
+                return firstCost.subtract(secondCost).intValue();
+            }
+        };
+    }
+
+    public static Comparator<Product> retailPriceComparator() {
+        return new Comparator<Product>() {
+            @Override
+            public int compare(Product first, Product second) {
+                if (first == null || second == null) {
+                    throw new IllegalArgumentException("Item prices to be compared cannot be null.");
+                }
+                BigDecimal firstCost = first.retailPrice.getValue();
+                BigDecimal secondCost = second.retailPrice.getValue();
+                return firstCost.subtract(secondCost).intValue();
+            }
+        };
+    }
+
+    public Currency computeMarginAtRetailPrice(Currency exchangeRate) {
+        return new Currency(exchangeRate.getType(),
+                retailPrice.getValue().subtract(this.item.computeTotalCost(exchangeRate).getValue()));
+    }
+
+    public Currency computeMarginAtApplicableDiscount(Currency exchangeRate) {
+        BigDecimal cost = this.item.getUnitCost().getValue();
+        BigDecimal applicableDiscount = this.item.getApplicableDiscount();
+        if (applicableDiscount != null) {
+            cost = cost.subtract(cost.multiply(applicableDiscount));
         }
-        if (shipping != null) {
-            totalCost = totalCost.add(shipping.getValue());
-        }
-        return totalCost;
+        cost = this.item.applyTaxAndShipping(cost);
+        return new Currency(exchangeRate.getType(), retailPrice.getValue().subtract(cost.multiply(exchangeRate.getValue())));
     }
 
-    public Currency computeTotalCost(Currency exchangeRate) {
-        return new Currency(exchangeRate.getType(), computeTotalCost().getValue().multiply(exchangeRate.getValue()));
+    public Item getItem() {
+        return item;
     }
 
-    public String getBrand() {
-        return brand;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
+    public Currency getRetailPrice() {
+        return retailPrice;
     }
 
-    public String getType() {
-        return type;
+    public void setRetailPrice(Currency retailPrice) {
+        this.retailPrice = retailPrice;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public Currency getProjectedMarginAtFullPrice() {
+        return projectedMarginAtFullPrice;
     }
 
-    public String getShade() {
-        return shade;
+    public void setProjectedMarginAtFullPrice(Currency projectedMarginAtFullPrice) {
+        this.projectedMarginAtFullPrice = projectedMarginAtFullPrice;
     }
 
-    public void setShade(String shade) {
-        this.shade = shade;
+    public Currency getProjectedMarginAtApplicableDiscount() {
+        return projectedMarginAtApplicableDiscount;
     }
 
-    public Currency getUnitCost() {
-        return unitCost;
+    public void setProjectedMarginAtApplicableDiscount(Currency projectedMarginAtApplicableDiscount) {
+        this.projectedMarginAtApplicableDiscount = projectedMarginAtApplicableDiscount;
     }
-
-    public void setUnitCost(Currency unitCost) {
-        this.unitCost = unitCost;
-    }
-
-    public BigDecimal getTax() {
-        return tax;
-    }
-
-    public void setTax(BigDecimal tax) {
-        this.tax = tax;
-    }
-
-    public Currency getShipping() {
-        return shipping;
-    }
-
-    public void setShipping(Currency shipping) {
-        this.shipping = shipping;
-    }
-
-    public BigDecimal getApplicableDiscount() {
-        return applicableDiscount;
-    }
-
-    public void setApplicableDiscount(BigDecimal applicableDiscount) {
-        this.applicableDiscount = applicableDiscount;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public String getRetailer() {
-        return retailer;
-    }
-
-    public void setRetailer(String retailer) {
-        this.retailer = retailer;
-    }
-
-    //    public Currency computeMarginAtRetailPrice(Currency exchangeRate) {
-//        return new Currency(exchangeRate.getType(),
-//                retailPrice.getValue().subtract(computeTotalCost(exchangeRate).getValue()));
-//    }
-//
-//    public Currency computeMarginAtApplicableDiscount(Currency exchangeRate) {
-//        BigDecimal cost = unitCost.getValue();
-//        if (applicableDiscount != null) {
-//            cost = cost.subtract(cost.multiply(applicableDiscount));
-//        }
-//        cost = applyTaxAndShipping(cost);
-//        return new Currency(exchangeRate.getType(), retailPrice.getValue().subtract(cost.multiply(exchangeRate.getValue())));
-//    }
 }

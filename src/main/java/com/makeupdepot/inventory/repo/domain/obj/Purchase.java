@@ -1,5 +1,6 @@
 package com.makeupdepot.inventory.repo.domain.obj;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.makeupdepot.inventory.misc.Currency;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -15,26 +16,24 @@ import java.util.List;
 @Data
 public class Purchase {
 
-    public enum Status {
-        PURCHASED, ARRIVEDINCA, ONHAND, SHIPPINGTOMNL, FORPURCHASE, RETURNED, CANCELLED;
-    }
-
     @Id
     private String id;
 
     @NotNull
-    private Status status;
+    private Meta.PurchaseStatus purchaseStatus;
     @NotNull
     private String orderNumber;
     private String retailer;
 
     @NotNull
+    @JsonFormat(pattern = "MMM-dd-yyyy")
     private Date purchaseDate;
+
     @NotNull
     private String purchasedBy;
 
     @NotEmpty
-    private List<Product> items;
+    private List<Item> items;
 
     private Currency totalCostPeso;
     private Currency totalCostDollar;
@@ -42,7 +41,7 @@ public class Purchase {
     private Purchase() {
     }
 
-    public Purchase(String status, String orderNumber, Date purchaseDate, String purchasedBy, List<Product> items) {
+    public Purchase(String status, String orderNumber, Date purchaseDate, String purchasedBy, List<Item> items) {
         this.orderNumber = orderNumber;
         this.purchaseDate = purchaseDate;
         this.purchasedBy = purchasedBy;

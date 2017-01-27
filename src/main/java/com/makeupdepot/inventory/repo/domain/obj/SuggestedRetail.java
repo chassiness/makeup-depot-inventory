@@ -1,12 +1,10 @@
 package com.makeupdepot.inventory.repo.domain.obj;
 
 import com.makeupdepot.inventory.misc.Currency;
-import org.springframework.data.util.Pair;
 
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -26,7 +24,7 @@ public class SuggestedRetail {
         }
     }
 
-    @NotNull private ProductPrice product;
+    @NotNull private Product product;
     @NotNull private Currency exchangeRate;
     private Currency marginAtRetailPrice;
     private List<PriceOption> priceOptions;
@@ -34,7 +32,7 @@ public class SuggestedRetail {
     private SuggestedRetail() {
     }
 
-    public SuggestedRetail(ProductPrice product, Currency exchangeRate) {
+    public SuggestedRetail(Product product, Currency exchangeRate) {
         this.product = product;
         this.exchangeRate = exchangeRate;
         setMarginAtRetailPrice(product.computeMarginAtRetailPrice(exchangeRate));
@@ -45,11 +43,11 @@ public class SuggestedRetail {
 
     }
 
-    public ProductPrice getProduct() {
+    public Product getProduct() {
         return product;
     }
 
-    public void setProduct(ProductPrice product) {
+    public void setProduct(Product product) {
         this.product = product;
     }
 

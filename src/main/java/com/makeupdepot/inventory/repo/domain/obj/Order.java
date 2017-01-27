@@ -1,5 +1,6 @@
 package com.makeupdepot.inventory.repo.domain.obj;
 
+import com.makeupdepot.inventory.custom.annotation.CascadeSave;
 import com.makeupdepot.inventory.misc.Currency;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
@@ -20,10 +21,11 @@ public class Order {
     private String orderId;
 
     @NotNull
-    private List<ProductPrice> products;
+    private List<Product> products;
     private Currency totalAmount;
 
     @DBRef
+    @CascadeSave
     private Client client;
 
     private Payment downPayment;
@@ -31,34 +33,26 @@ public class Order {
     private BigDecimal balanceAmt;
     private BigDecimal shippingFee;
 
-    private OrderStatus status;
+    private Meta.OrderStatus status;
     private String batch;
     private boolean shipped;
     private String trackingDetails;
     private List<String> notes;
+    private Meta.Platform platform;
 
     private Order() {
     }
 
-    public Order(List<ProductPrice> products, Client client) {
+    public Order(List<Product> products, Client client) {
         this.products = products;
         this.client = client;
-    }
-
-    public enum PaymentType {
-        BDO, BPI, SECURITYBANK, EWB, PAYPAL
-    }
-
-    //Confirmed means downPayment/payment received.
-    public enum OrderStatus {
-        NEW, CONFIRMED, READYTOSHIP, SHIPPED, CANCELLED
     }
 
     @Data
     class Payment {
         private Date paymentDate;
         private BigDecimal amount;
-        private PaymentType paymentType;
+        private Meta.PaymentType paymentType;
     }
 
     public void addNote(String note) {
@@ -84,9 +78,25 @@ public class Order {
 
     public BigDecimal calculateTotal() {
         BigDecimal total = new BigDecimal(0);
-        for (ProductPrice product : products) {
+        for (Product product : products) {
             total.add(product.getRetailPrice().getValue());
         }
         return total.add(shippingFee);
+    }
+
+    public Meta.OrderStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(Meta.OrderStatus status) {
+        this.status = status;
+    }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
     }
 }

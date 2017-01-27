@@ -1,5 +1,6 @@
 package com.makeupdepot.inventory.misc;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -11,8 +12,8 @@ public class Currency {
         USD, Php
     }
 
-    private Type type;
-    private BigDecimal value;
+    @NotNull private Type type;
+    @NotNull private BigDecimal value;
 
     private Currency() {
     }

@@ -13,7 +13,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest
-public class ProductPriceRepositoryWebTest {
+public class ProductRepositoryWebTest {
 
     @Autowired
     private MockMvc mockMvc;

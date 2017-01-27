@@ -1,6 +1,5 @@
 package com.makeupdepot.inventory.repo.domain.obj;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.makeupdepot.inventory.misc.Currency;
 import org.junit.Before;
@@ -17,19 +16,19 @@ import static org.hamcrest.Matchers.is;
 /**
  * Created by chassiness on 11/16/16.
  */
-public class ProductPriceTest {
-    ProductPrice sample;
+public class ProductTest {
+    Product sample;
     Currency exchangeRate = new Currency(Currency.Type.Php, BigDecimal.valueOf(48.75));
 
     @Before
     public void initialize() {
-        sample = new ProductPrice(new Product("Stila Cosmetics", "Liquid Lipstick", new Currency(Currency.Type.USD,
+        sample = new Product(new Item("Stila Cosmetics", "Liquid Lipstick", new Currency(Currency.Type.USD,
                 BigDecimal.valueOf(24))), new Currency(Currency.Type.Php, BigDecimal.valueOf(1350)), exchangeRate);
     }
 
     @Test
     public void getTotalCost() throws Exception {
-        Currency totalCost = sample.getProduct().computeTotalCost();
+        Currency totalCost = sample.getItem().computeTotalCost();
         assertThat(totalCost.getType(), is(Currency.Type.USD));
         assertThat(totalCost.getValue(), is(BigDecimal.valueOf(24).setScale(2)));
     }
@@ -73,50 +72,50 @@ public class ProductPriceTest {
 
     @Test
     public void getTotalCost_withTax() throws Exception {
-        sample.getProduct().setTax(new BigDecimal(0.0875));
-        Currency totalCost = sample.getProduct().computeTotalCost();
+        sample.getItem().setTax(new BigDecimal(0.0875));
+        Currency totalCost = sample.getItem().computeTotalCost();
         assertThat(totalCost.getType(), is(Currency.Type.USD));
         assertThat(totalCost.getValue(), is(BigDecimal.valueOf(26.1).setScale(2)));
     }
 
     @Test
     public void getTotalCost_zeroTax() throws Exception {
-        sample.getProduct().setTax(new BigDecimal(0));
-        Currency totalCost = sample.getProduct().computeTotalCost();
+        sample.getItem().setTax(new BigDecimal(0));
+        Currency totalCost = sample.getItem().computeTotalCost();
         assertThat(totalCost.getType(), is(Currency.Type.USD));
         assertThat(totalCost.getValue(), equalTo(BigDecimal.valueOf(24).setScale(2)));
     }
 
     @Test
     public void getTotalCost_noShipping() throws Exception {
-        sample.getProduct().setShipping(new Currency(Currency.Type.USD, new BigDecimal(0)));
-        Currency totalCost = sample.getProduct().computeTotalCost();
+        sample.getItem().setShipping(new Currency(Currency.Type.USD, new BigDecimal(0)));
+        Currency totalCost = sample.getItem().computeTotalCost();
         assertThat(totalCost.getType(), is(Currency.Type.USD));
         assertThat(totalCost.getValue(), is(BigDecimal.valueOf(24).setScale(2)));
     }
 
     @Test
     public void getTotalCost_withShipping() throws Exception {
-        sample.getProduct().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
-        Currency totalCost = sample.getProduct().computeTotalCost();
+        sample.getItem().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
+        Currency totalCost = sample.getItem().computeTotalCost();
         assertThat(totalCost.getType(), is(Currency.Type.USD));
         assertThat(totalCost.getValue(), is(BigDecimal.valueOf(32.95)));
     }
 
     @Test
     public void getTotalCost_taxAndShipping() throws Exception {
-        sample.getProduct().setTax(new BigDecimal(0.0875));
-        sample.getProduct().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
-        Currency totalCost = sample.getProduct().computeTotalCost();
+        sample.getItem().setTax(new BigDecimal(0.0875));
+        sample.getItem().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
+        Currency totalCost = sample.getItem().computeTotalCost();
         assertThat(totalCost.getType(), is(Currency.Type.USD));
         assertThat(totalCost.getValue(), is(BigDecimal.valueOf(35.05)));
     }
 
     @Test
     public void getTotalCost_exchangeRate() throws Exception {
-        sample.getProduct().setTax(new BigDecimal(0.0875));
-        sample.getProduct().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
-        Currency totalCost = sample.getProduct().computeTotalCost(exchangeRate);
+        sample.getItem().setTax(new BigDecimal(0.0875));
+        sample.getItem().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
+        Currency totalCost = sample.getItem().computeTotalCost(exchangeRate);
         assertThat(totalCost.getType(), is(Currency.Type.Php));
         assertThat(totalCost.getValue(), is(BigDecimal.valueOf(1708.69)));
     }
@@ -130,7 +129,7 @@ public class ProductPriceTest {
 
     @Test
     public void getMarginAtRetailPrice_tax() throws Exception {
-        sample.getProduct().setTax(new BigDecimal(0.0875));
+        sample.getItem().setTax(new BigDecimal(0.0875));
         Currency margin = sample.computeMarginAtRetailPrice(exchangeRate);
         assertThat(margin.getType(), is(Currency.Type.Php));
         assertThat(margin.getValue(), is(BigDecimal.valueOf(77.62)));
@@ -138,7 +137,7 @@ public class ProductPriceTest {
 
     @Test
     public void getMarginAtRetailPrice_shipping() throws Exception {
-        sample.getProduct().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
+        sample.getItem().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
         Currency margin = sample.computeMarginAtRetailPrice(exchangeRate);
         assertThat(margin.getType(), is(Currency.Type.Php));
         assertThat(margin.getValue(), is(BigDecimal.valueOf(-256.31)));
@@ -146,8 +145,8 @@ public class ProductPriceTest {
 
     @Test
     public void getMarginAtRetailPrice_taxAndShipping() throws Exception {
-        sample.getProduct().setTax(new BigDecimal(0.0875));
-        sample.getProduct().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
+        sample.getItem().setTax(new BigDecimal(0.0875));
+        sample.getItem().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
         Currency margin = sample.computeMarginAtRetailPrice(exchangeRate);
         assertThat(margin.getType(), is(Currency.Type.Php));
         assertThat(margin.getValue(), is(BigDecimal.valueOf(-358.69)));
@@ -155,7 +154,7 @@ public class ProductPriceTest {
 
     @Test
     public void getMarginAtApplicableDiscount() throws Exception {
-        sample.getProduct().setApplicableDiscount(new BigDecimal(0.20));
+        sample.getItem().setApplicableDiscount(new BigDecimal(0.20));
         Currency margin = sample.computeMarginAtApplicableDiscount(exchangeRate);
         assertThat(margin.getType(), is(Currency.Type.Php));
         assertThat(margin.getValue(), is(BigDecimal.valueOf(414).setScale(2)));
@@ -170,8 +169,8 @@ public class ProductPriceTest {
 
     @Test
     public void getMarginAtApplicableDiscount_tax() throws Exception {
-        sample.getProduct().setApplicableDiscount(new BigDecimal(0.20));
-        sample.getProduct().setTax(new BigDecimal(0.0875));
+        sample.getItem().setApplicableDiscount(new BigDecimal(0.20));
+        sample.getItem().setTax(new BigDecimal(0.0875));
         Currency margin = sample.computeMarginAtApplicableDiscount(exchangeRate);
         assertThat(margin.getType(), is(Currency.Type.Php));
         assertThat(margin.getValue(), is(BigDecimal.valueOf(332.1).setScale(2)));
@@ -179,8 +178,8 @@ public class ProductPriceTest {
 
     @Test
     public void getMarginAtApplicableDiscount_shipping() throws Exception {
-        sample.getProduct().setApplicableDiscount(new BigDecimal(0.20));
-        sample.getProduct().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
+        sample.getItem().setApplicableDiscount(new BigDecimal(0.20));
+        sample.getItem().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
         Currency margin = sample.computeMarginAtApplicableDiscount(exchangeRate);
         assertThat(margin.getType(), is(Currency.Type.Php));
         assertThat(margin.getValue(), is(BigDecimal.valueOf(-22.31)));
@@ -188,9 +187,9 @@ public class ProductPriceTest {
 
     @Test
     public void getMarginAtApplicableDiscount_taxAndShipping() throws Exception {
-        sample.getProduct().setApplicableDiscount(new BigDecimal(0.20));
-        sample.getProduct().setTax(new BigDecimal(0.0875));
-        sample.getProduct().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
+        sample.getItem().setApplicableDiscount(new BigDecimal(0.20));
+        sample.getItem().setTax(new BigDecimal(0.0875));
+        sample.getItem().setShipping(new Currency(Currency.Type.USD, new BigDecimal(8.95)));
         Currency margin = sample.computeMarginAtApplicableDiscount(exchangeRate);
         assertThat(margin.getType(), is(Currency.Type.Php));
         assertThat(margin.getValue(), is(BigDecimal.valueOf(-104.21)));
