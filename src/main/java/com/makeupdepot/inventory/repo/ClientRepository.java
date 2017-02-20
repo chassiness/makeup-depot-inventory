@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by chassiness on 1/18/17.
  */
-public interface ClientRepository extends PagingAndSortingRepository<Client, String> {
+public interface ClientRepository extends MongoRepository<Client, String> {
 
     List<Client> findByName(@Param("name") String name);
     List<Client> findBySocialMediaChannelsUsername(@Param("username") String name);

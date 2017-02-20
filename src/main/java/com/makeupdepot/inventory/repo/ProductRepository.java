@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 @RepositoryRestResource(collectionResourceRel = "products", path = "products")
-public interface ProductRepository extends PagingAndSortingRepository<Product, String> {
+public interface ProductRepository extends MongoRepository<Product, String> {
 
     List<Product> findByItemBrandIgnoreCase(@Param("brand") String brand);
     List<Product> findByItemTypeIgnoreCase(@Param("type") String type);

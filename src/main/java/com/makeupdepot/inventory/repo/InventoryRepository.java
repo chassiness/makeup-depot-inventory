@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by chassiness on 1/21/17.
  */
-public interface InventoryRepository extends PagingAndSortingRepository<Inventory, String> {
+public interface InventoryRepository extends MongoRepository<Inventory, String> {
 
     List<Inventory> findByBrand(@Param("brand") String brand);
     List<Inventory> findByType(@Param("type") String type);

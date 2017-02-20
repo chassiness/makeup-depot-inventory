@@ -10,10 +10,10 @@ import java.util.List;
 /**
  * Created by chassiness on 1/17/17.
  */
-public interface PurchaseRepository extends PagingAndSortingRepository<Purchase, String> {
+public interface PurchaseRepository extends MongoRepository<Purchase, String> {
 
-    List<Purchase> findByStatus(@Param("status") String status);
+    List<Purchase> findByPurchaseStatus(@Param("status") String status);
     List<Purchase> findByPurchasedBy(@Param("purchasedby") String purchasedBy);
-    List<Purchase> findRetailer(@Param("retailer") String retailer);
-    List<Purchase> findOrderNumber(@Param("ordernumber") String orderNumber);
+    List<Purchase> findByRetailer(@Param("retailer") String retailer);
+    List<Purchase> findByOrderNumber(@Param("ordernumber") String orderNumber);
 }
